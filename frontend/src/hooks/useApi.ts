@@ -8,7 +8,7 @@ export const useApi = () => {
     //   ? '/api' 
     //   : `http://localhost:3001/api`;
 
-    const API_BASE_URL = `http://localhost:8080/api`;
+    const API_BASE_URL = `https://xauusdalgotrader-webapp.onrender.com/api`;
     const url = `${API_BASE_URL}${endpoint}`;
     
     try {

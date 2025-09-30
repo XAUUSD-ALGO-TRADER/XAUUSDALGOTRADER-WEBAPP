@@ -2,7 +2,7 @@
 //   ? 'http://localhost:3001/api'
 //   : `http://localhost:3001/api`;
 
-const API_BASE_URL = `http://localhost:8080/api`;
+const API_BASE_URL = `https://xauusdalgotrader-webapp.onrender.com/api`;
 
 console.log("Running in mode:", import.meta.env.MODE);
 console.log("API Base URL:", API_BASE_URL);

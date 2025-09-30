@@ -36,11 +36,6 @@ app.options('*', cors({
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// Log environment variables (remove in production)
-console.log('Environment variables loaded:');
-console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? 'Set' : 'Missing');
-console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Missing');
-console.log('FRONTEND_URL:', FRONTEND_URL);
 
 // Import routes
 import apiRoutes from './routes/api.js';
