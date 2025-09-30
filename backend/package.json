@@ -1,0 +1,29 @@
+{
+  "name": "xauusd-algo-trader-backend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon server/index.js",
+    "start": "node server/index.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.1",
+    "googleapis": "^160.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "xauusd-algo-trader-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "setup": "./setup-env.sh",
+    "setup:env": "./setup-env.sh",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run start",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "clean": "rm -rf node_modules frontend/node_modules backend/node_modules frontend/dist",
+    "lint": "cd frontend && npm run lint",
+    "type-check": "cd frontend && npm run type-check"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
