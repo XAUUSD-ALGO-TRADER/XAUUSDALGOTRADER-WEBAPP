@@ -35,8 +35,8 @@ const Tools = () => {
       description: "Automated trading robots for MT4/MT5",
       icon: Settings,
       files: [
-        { name: "Gold Scalper EA v2.1", type: "mq4", size: "2.3 MB", premium: true, filename: "Gold-Scalper-EA.mq4" },
-        { name: "Trend Master EA", type: "ex4", size: "1.8 MB", premium: false, filename: "Trend-Master-EA.ex4" },
+        { name: "Gold Scalper EA v2.1", type: "mq4", size: "2.3 MB", premium: true, filename: "Gold-Scalper-EA.zip" },
+        { name: "Trend Master EA", type: "ex4", size: "1.8 MB", premium: false, filename: "Trend-Master-EA.zip" },
       ]
     },
     {
@@ -44,8 +44,8 @@ const Tools = () => {
       description: "Advanced technical analysis tools",
       icon: FileText,
       files: [
-        { name: "Smart Money Concepts", type: "mq4", size: "890 KB", premium: true, filename: "Smart-Money-Concepts.mq4" },
-        { name: "Volume Profile Pro", type: "ex4", size: "1.2 MB", premium: true, filename: "Volume-Profile-Pro.ex4" },
+        { name: "Smart Money Concepts", type: "mq4", size: "890 KB", premium: true, filename: "Smart-Money-Concepts.zip" },
+        { name: "Volume Profile Pro", type: "ex4", size: "1.2 MB", premium: true, filename: "Volume-Profile-Pro.zip" },
       ]
     },
     {
