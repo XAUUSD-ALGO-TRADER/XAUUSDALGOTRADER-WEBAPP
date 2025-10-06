@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import contactRoutes from '../server/routes/contact'
 
 // Load environment variables
 dotenv.config();
@@ -40,11 +41,13 @@ app.use(express.static('public'));
 // Import routes
 import apiRoutes from './routes/api.js';
 app.use('/api', apiRoutes);
+app.use('/api', contactRoutes);
+
 
 // Serve React app in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../../frontend/dist')));
-  
+
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
   });
