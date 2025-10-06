@@ -283,23 +283,7 @@ const AdminDashboard = () => {
             </Button>
           </div>
         </div>
-        {/* <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold gold-text mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage users and monitor platform activity</p>
-          </div>
-          <div className="flex gap-4">
-            <Button variant="outline" onClick={exportUsers}>
-              <Download className="w-4 h-4 mr-2" />
-              Export Users
-            </Button>
-            <Button className="premium-button">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Analytics
-            </Button>
-          </div>
-        </div> */}
-
+        
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
