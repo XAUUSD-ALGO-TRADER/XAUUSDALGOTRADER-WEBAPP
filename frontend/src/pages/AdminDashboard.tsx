@@ -96,7 +96,7 @@ const AdminDashboard = () => {
   const loadUserHistory = async (userId: number) => {
     try {
       const response = await api.getUserHistory(userId);
-      setUserHistory(response.history);
+      setUserHistory(response.history as ApprovalHistory[]);
     } catch (error) {
       toast({
         title: "Error",
