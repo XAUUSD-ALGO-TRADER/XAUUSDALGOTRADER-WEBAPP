@@ -27,7 +27,7 @@ const Index = () => {
             Copy trades from successful traders, share your strategies, and build your trading network. 
             Join our community for early access!
           </p>
-          <ExampleApiComponent />
+          {/* <ExampleApiComponent /> */}
         </div>
       </section>
       
