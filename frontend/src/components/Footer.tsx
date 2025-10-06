@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Mail, Phone, MapPin, Youtube, TrendingUp, MessageCircle, Send } from "lucide-react";
 import tradingLogo from "@/assets/trading-logo.png";
 import { useForm } from "react-hook-form";
+import { api } from "@/lib/api";
 
 interface ContactFormData {
   name: string;
@@ -24,48 +25,33 @@ const Footer = () => {
     reset, 
     formState: { errors } 
   } = useForm<ContactFormData>();
-
   const onSubmit = async (data: ContactFormData) => {
-    setIsLoading(true);
-    
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          message: data.message,
-          type: 'website_contact'
-        }),
-      });
+  setIsLoading(true);
+  
+  try {
+    await api.contact({
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      message: data.message,
+      type: 'website_contact'
+    });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: "Message Sent!",
-          description: "Thank you for contacting us. We'll get back to you soon.",
-        });
-        reset();
-      } else {
-        throw new Error(result.error || 'Failed to send message');
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Helper function to get error message
+    toast({
+      title: "Message Sent!",
+      description: "Thank you for contacting us. We'll get back to you soon.",
+    });
+    reset();
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
   const getErrorMessage = (error: unknown): string | null => {
     if (
       error &&

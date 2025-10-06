@@ -265,6 +265,18 @@ export const api = {
   async getHealth(): Promise<{ status: string; timestamp: string }> {
     return this.request("/health");
   },
+  async contact(contactData: {
+    name: string;
+    email: string;
+    phone?: string;
+    message: string;
+    type?: string;
+  }): Promise<{ message: string; success: boolean }> {
+    return this.request("/contact", {
+      method: "POST",
+      body: JSON.stringify(contactData),
+    });
+  },
 
   // Supabase direct integration (optional - for client-side operations)
   async supabaseQuery(
