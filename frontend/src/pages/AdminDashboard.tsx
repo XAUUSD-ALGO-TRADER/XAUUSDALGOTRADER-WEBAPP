@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
-
+import { useNavigate, useLocation } from "react-router-dom";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 interface User {
   id: number;
   name: string;
@@ -65,6 +66,24 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
+  const getBackButtonText = () => {
+    const referrer = document.referrer;
+    if (referrer.includes('/profile')) return 'Profile';
+    if (referrer.includes('/tools')) return 'Tools';
+    if (referrer.includes('/admin')) return 'Admin';
+    return 'Back';
+  };
 
   useEffect(() => {
     loadUsers();
@@ -232,7 +251,39 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-background pt-20">
       <div className="container mx-auto px-6 py-8">
+        {/* Enhanced Header with Breadcrumbs */}
         <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {getBackButtonText()}
+            </Button>
+            
+            {/* Breadcrumb separator */}
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            
+            <div>
+              <h1 className="text-3xl font-bold gold-text mb-2">Admin Dashboard</h1>
+              <p className="text-muted-foreground">Manage users and monitor platform activity</p>
+            </div>
+          </div>
+          
+          <div className="flex gap-4">
+            <Button variant="outline" onClick={exportUsers}>
+              <Download className="w-4 h-4 mr-2" />
+              Export Users
+            </Button>
+            <Button className="premium-button">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analytics
+            </Button>
+          </div>
+        </div>
+        {/* <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold gold-text mb-2">Admin Dashboard</h1>
             <p className="text-muted-foreground">Manage users and monitor platform activity</p>
@@ -247,7 +298,7 @@ const AdminDashboard = () => {
               Analytics
             </Button>
           </div>
-        </div>
+        </div> */}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
