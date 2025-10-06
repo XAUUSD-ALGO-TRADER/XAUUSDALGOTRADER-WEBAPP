@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import contactRoutes from '../server/routes/contact'
+import contactRoutes from '../server/routes/contact.js'
 
 // Load environment variables
 dotenv.config();
