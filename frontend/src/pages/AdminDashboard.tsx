@@ -82,6 +82,7 @@ const AdminDashboard = () => {
       setUsers(response.users);
       setPagination(response.pagination);
     } catch (error) {
+      console.log("Load users error:", error);
       toast({
         title: "Error",
         description: "Failed to load users",
