@@ -1,5 +1,5 @@
 // const API_BASE_URL = import.meta.env.MODE === 'development'
-//   ? 'http://localhost:3001/api'
+//   ? 'http://localhost:8080/api'
 //   : `http://localhost:3001/api`;
 
 const API_BASE_URL = `https://xauusdalgotrader-webapp.onrender.com/api`;

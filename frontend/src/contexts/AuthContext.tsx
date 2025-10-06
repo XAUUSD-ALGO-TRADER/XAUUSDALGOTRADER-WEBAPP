@@ -108,7 +108,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     isAuthenticated: !!user || !!admin,
     isAdmin: !!admin,
-    isUserApproved: user?.status === 'approved', // Add this
+    isUserApproved: user?.status === 'approved' || !!admin, // Add this
     refreshUserProfile, // Add this
   };
 
