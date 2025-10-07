@@ -236,11 +236,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-8 border-t border-border">
           <div className="flex items-center space-x-3 text-muted-foreground">
             <Mail className="w-5 h-5 text-primary" />
-            <span>xauusdalgotrader@gmail.com</span>
+            <span>support@xauusdalgotrader.com</span>
           </div>
           <div className="flex items-center space-x-3 text-muted-foreground">
-            <Phone className="w-5 h-5 text-primary" />
-            <span>+91-XXXXXXXXXX</span>
+            {/* <Phone className="w-5 h-5 text-primary" /> */}
+            <span></span>
           </div>
           <div className="flex items-center space-x-3 text-muted-foreground">
             <MapPin className="w-5 h-5 text-primary" />
