@@ -36,7 +36,7 @@ const Tools = () => {
       icon: Settings,
       files: [
         { name: "Gold Scalper EA v2.1", type: "mq4", size: "2.3 MB", premium: true, filename: "Gold-Scalper-EA.zip" },
-        { name: "Trend Master EA", type: "zip", size: "1.8 MB", premium: false, filename: "Trend-Master-EA.zip" },
+        { name: "XAUUSD AlgoTrader Pro EA", type: "zip", size: "1.8 MB", premium: false, filename: "XAUUSDALGOTRADER_PRO_EA.zip" },
       ]
     },
     {
