@@ -165,7 +165,7 @@ const TermsOfService = () => {
                   For questions regarding these Terms of Service, please contact us:
                 </p>
                 <div className="space-y-2 text-muted-foreground">
-                  <p><strong>Email:</strong> xauusdalgotrader@gmail.com</p>
+                  <p><strong>Email:</strong> support@xauusdalgotrader.com</p>
                   <p><strong>Address:</strong> Bhubaneswar, Odisha - 751003, India</p>
                 </div>
               </CardContent>

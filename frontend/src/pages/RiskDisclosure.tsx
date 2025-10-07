@@ -181,7 +181,7 @@ const RiskDisclosure = () => {
                   If you have questions about these risks or need clarification:
                 </p>
                 <div className="space-y-2 text-muted-foreground">
-                  <p><strong>Email:</strong> xauusdalgotrader@gmail.com</p>
+                  <p><strong>Email:</strong> support@xauusdalgotrader.com</p>
                   <p><strong>Address:</strong> Bhubaneswar, Odisha - 751003, India</p>
                 </div>
               </CardContent>
