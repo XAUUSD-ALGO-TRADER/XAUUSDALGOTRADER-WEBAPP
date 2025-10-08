@@ -418,15 +418,11 @@ const Register = () => {
     }
   };
 
+  const brokerName = ["Exness", "Vantage", "RoboForex"]
   const accountTypes = [
-    "Savings",
-    "Trading",
-    "Demat",
-    "Current",
-    "Investment",
-    "Commodity",
-    "Currency",
-    "Derivatives"
+    "RAW/ECN",
+    "STANDARD",
+    "CENT"
   ];
 
   return (
@@ -590,7 +586,7 @@ const Register = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div className="space-y-2">
+                      {/* <div className="space-y-2">
                         <Label>Broker Name *</Label>
                         <Input
                           placeholder="e.g., Zerodha, Upstox"
@@ -599,6 +595,28 @@ const Register = () => {
                           disabled={isLoading}
                           className={errors[`brokerName_${account.id}`] ? "border-red-500" : ""}
                         />
+                        {errors[`brokerName_${account.id}`] && (
+                          <p className="text-sm text-red-500">{errors[`brokerName_${account.id}`]}</p>
+                        )}
+                      </div> */}
+
+                        <div className="space-y-2">
+                        <Label>Broker Name *</Label>
+                        <Select 
+                          onValueChange={(value) => handleBrokerAccountChange(account.id, "brokerName", value)}
+                          disabled={isLoading}
+                        >
+                          <SelectTrigger className={errors[`brokerName_${account.id}`] ? "border-red-500" : ""}>
+                            <SelectValue placeholder="Choose Broker" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {brokerName.map(type => (
+                              <SelectItem key={type} value={type.toLowerCase()}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         {errors[`brokerName_${account.id}`] && (
                           <p className="text-sm text-red-500">{errors[`brokerName_${account.id}`]}</p>
                         )}
