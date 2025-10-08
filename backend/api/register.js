@@ -144,8 +144,8 @@ export default async function handler(req, res) {
     const { email, password, name, country, mobile, brokerAccounts } = req.body;
 
     if (!email || !password || !name) {
-      return res.status(400).json({ 
-        error: 'Email, password, and name are required' 
+      return res.status(400).json({
+        error: 'Email, password, and name are required'
       });
     }
 
@@ -162,8 +162,8 @@ export default async function handler(req, res) {
     if (brokerAccounts && Array.isArray(brokerAccounts)) {
       for (const account of brokerAccounts) {
         if (!account.brokerName || !account.accountNumber || !account.accountType) {
-          return res.status(400).json({ 
-            error: 'All broker accounts must have broker name, account number, and account type' 
+          return res.status(400).json({
+            error: 'All broker accounts must have broker name, account number, and account type'
           });
         }
       }

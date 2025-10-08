@@ -3,13 +3,11 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { createServiceRoleClient } from '../lib/supabase-server.js';
 import { emailQueue } from '../lib/emailQueue.js';
-import { 
-  registrationPendingEmail, 
-  accountApprovedEmail, 
-  accountRejectedEmail 
+import {
+  registrationPendingEmail,
+  accountApprovedEmail,
+  accountRejectedEmail
 } from '../emails/templates.js';
-import brokerAccountsRoutes from './broker-accounts.js';
-// app.use('/api/user', brokerAccountsRoutes);
 
 
 const router = express.Router();
@@ -66,12 +64,12 @@ router.get('/test-supabase', async (req, res) => {
   try {
     const supabase = createServiceRoleClient();
     const { data, error } = await supabase.from('admins').select('count');
-    
+
     if (error) {
       console.error('Supabase test error:', error);
       return res.status(500).json({ error: 'Supabase connection failed', details: error });
     }
-    
+
     res.json({ message: 'Supabase connected successfully', data });
   } catch (error) {
     console.error('Supabase test exception:', error);
@@ -84,7 +82,7 @@ router.get('/test-supabase', async (req, res) => {
 router.post('/register', async (req, res) => {
   try {
     console.log('Registration attempt:', req.body);
-    const { name, email, password, country, mobile } = req.body;
+    const { name, email, password, country, mobile, brokerAccounts } = req.body;
     const supabase = createServiceRoleClient();
 
     // Validation
@@ -96,7 +94,7 @@ router.post('/register', async (req, res) => {
     if (password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
-    
+
     // Check if user already exists
     const { data: existingUser, error: checkError } = await supabase
       .from('users')
@@ -115,41 +113,101 @@ router.post('/register', async (req, res) => {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
     console.log('Creating user with hashed password');
-    
+
     // Create user
     const { data: newUser, error: insertError } = await supabase
       .from('users')
       .insert([
         {
-          name,
-          email,
+          email: email.toLowerCase().trim(),
           password: hashedPassword,
-          country,
-          mobile,
-          status: 'pending'
+          name: name.trim(),
+          country: country || null,
+          mobile: mobile || null,
+          status: 'pending',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }
       ])
       .select()
       .single();
 
     if (insertError) {
-      console.error('Insert error:', insertError);
-      return res.status(500).json({ error: 'Failed to create user' });
+      console.error('Registration error:', insertError);
+      return res.status(500).json({ error: 'Failed to create user account' });
     }
+
+    // Create broker accounts if provided
+    if (brokerAccounts && brokerAccounts.length > 0) {
+      const brokerAccountsData = brokerAccounts.map(account => ({
+        user_id: newUser.id,
+        broker_name: account.brokerName.trim(),
+        account_number: account.accountNumber.trim(),
+        account_type: account.accountType.trim(),
+        is_active: true,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }));
+
+      console.log('Inserting broker accounts:', brokerAccountsData);
+
+      const { error: brokerError } = await supabase
+        .from('broker_accounts')
+        .insert(brokerAccountsData);
+
+      if (brokerError) {
+        console.error('Broker account creation error:', brokerError);
+        // Don't fail registration if broker accounts fail, just log it
+      }
+    }
+
     // Add email to queue (non-blocking)
-    emailQueue.addToQueue({
-      to: email,
-      subject: 'Registration Received - XAU/USD Algo Trader',
-      html: registrationPendingEmail(name, email)
-    });
-    
+    try {
+      // Send confirmation email to user using template
+      await emailQueue.addToQueue({
+        to: email,
+        subject: 'Registration Received - XAU/USD Algo Trader',
+        html: registrationPendingEmail(name, email)
+      });
+
+      // Send admin notification
+      const adminEmailHtml = `
+    <h2>New User Registration Requires Approval</h2>
+    <p><strong>Name:</strong> ${name}</p>
+    <p><strong>Email:</strong> ${email}</p>
+    <p><strong>Country:</strong> ${country || 'Not provided'}</p>
+    <p><strong>Mobile:</strong> ${mobile || 'Not provided'}</p>
+    <p><strong>Broker Accounts:</strong> ${brokerAccounts ? brokerAccounts.length : 0}</p>
+    ${brokerAccounts && brokerAccounts.length > 0 ? `
+      <h3>Broker Accounts:</h3>
+      <ul>
+        ${brokerAccounts.map(account => `
+          <li>${account.brokerName} - ${account.accountNumber} (${account.accountType})</li>
+        `).join('')}
+      </ul>
+    ` : ''}
+    <p><strong>Registered:</strong> ${new Date().toLocaleString()}</p>
+  `;
+
+      await emailQueue.addToQueue({
+        to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
+        subject: `New User Registration: ${name}`,
+        html: adminEmailHtml
+      });
+    } catch (emailError) {
+      console.error('Email queue error:', emailError);
+      // Don't fail registration if emails fail
+    }
+
     console.log('User created successfully:', newUser.id);
 
-    res.status(201).json({ 
+    res.status(201).json({
       message: 'Registration successful. Waiting for admin approval.',
-      userId: newUser.id 
+      userId: newUser.id
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -230,8 +288,8 @@ router.post('/login', async (req, res) => {
 
     // Check if user is approved
     if (user.status !== 'approved') {
-      return res.status(403).json({ 
-        error: 'Account pending approval. Please wait for admin approval.' 
+      return res.status(403).json({
+        error: 'Account pending approval. Please wait for admin approval.'
       });
     }
 
@@ -249,13 +307,13 @@ router.post('/login', async (req, res) => {
 
     // Generate token
     const token = jwt.sign(
-      { 
-        id: user.id, 
-        email: user.email, 
+      {
+        id: user.id,
+        email: user.email,
         name: user.name,
-        isAdmin: false 
-      }, 
-      JWT_SECRET, 
+        isAdmin: false
+      },
+      JWT_SECRET,
       { expiresIn: '24h' }
     );
 
@@ -320,13 +378,13 @@ router.post('/admin/login', async (req, res) => {
 
     // Generate token
     const token = jwt.sign(
-      { 
-        id: admin.id, 
-        email: admin.email, 
+      {
+        id: admin.id,
+        email: admin.email,
         name: admin.name,
-        isAdmin: true 
-      }, 
-      JWT_SECRET, 
+        isAdmin: true
+      },
+      JWT_SECRET,
       { expiresIn: '24h' }
     );
 
@@ -350,7 +408,7 @@ router.post('/admin/login', async (req, res) => {
 // router.post('/admin/hash-passwords', async (req, res) => {
 //   try {
 //     const supabase = createServiceRoleClient();
-    
+
 //     // Get all admins with raw passwords
 //     const { data: admins, error: fetchError } = await supabase
 //       .from('admins')
@@ -369,7 +427,7 @@ router.post('/admin/login', async (req, res) => {
 //       if (admin.password && !admin.password.startsWith('$2b$')) {
 //         console.log('Hashing password for:', admin.email);
 //         const hashedPassword = await bcrypt.hash(admin.password, 10);
-        
+
 //         // Update the admin with hashed password
 //         const { error: updateError } = await supabase
 //           .from('admins')
@@ -438,7 +496,7 @@ router.get('/admin/pending-users', authenticateAdmin, async (req, res) => {
   }
 });
 
-// Get all users (admin only)
+// Get all users (admin only) - Include broker account count
 router.get('/admin/users', authenticateAdmin, async (req, res) => {
   try {
     const { status, page = 1, limit = 10 } = req.query;
@@ -451,7 +509,8 @@ router.get('/admin/users', authenticateAdmin, async (req, res) => {
         id, name, email, country, mobile, 
         status, created_at, last_login,
         approved_by:admins(name),
-        approved_at
+        approved_at,
+        broker_accounts(count)
       `, { count: 'exact' });
 
     if (status && status !== 'all') {
@@ -470,7 +529,8 @@ router.get('/admin/users', authenticateAdmin, async (req, res) => {
     res.json({
       users: users.map(user => ({
         ...user,
-        approved_by_name: user.approved_by?.name
+        approved_by_name: user.approved_by?.name,
+        broker_accounts_count: user.broker_accounts?.[0]?.count || 0
       })),
       pagination: {
         page: parseInt(page),
@@ -485,7 +545,7 @@ router.get('/admin/users', authenticateAdmin, async (req, res) => {
   }
 });
 
-// Approve user (admin only)
+// Approve user (admin only) - Update broker accounts status too
 router.post('/admin/users/:id/approve', authenticateAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
@@ -493,6 +553,7 @@ router.post('/admin/users/:id/approve', authenticateAdmin, async (req, res) => {
     const adminId = req.admin.id;
     const supabase = createServiceRoleClient();
 
+    // Update user status to approved
     const { data: user, error: updateError } = await supabase
       .from('users')
       .update({
@@ -513,6 +574,20 @@ router.post('/admin/users/:id/approve', authenticateAdmin, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Update all user's broker accounts status to approved
+    const { error: brokerUpdateError } = await supabase
+      .from('broker_accounts')
+      .update({
+        status: 'approved',
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId);
+
+    if (brokerUpdateError) {
+      console.error('Update broker accounts error:', brokerUpdateError);
+      // Don't fail the request, just log the error
+    }
+
     // Record approval history
     await supabase
       .from('user_approval_history')
@@ -527,10 +602,10 @@ router.post('/admin/users/:id/approve', authenticateAdmin, async (req, res) => {
     emailQueue.addToQueue({
       to: user.email,
       subject: 'Account Approved - XAU/USD Algo Trader',
-      html: accountApprovedEmail(user.name)
+      html: accountApprovedEmail(user.name, user.email)
     });
 
-    console.log('User approved:', userId);
+    console.log('User and broker accounts approved:', userId);
     res.json({ message: 'User approved successfully' });
   } catch (error) {
     console.error('Approve user error:', error);
@@ -538,7 +613,7 @@ router.post('/admin/users/:id/approve', authenticateAdmin, async (req, res) => {
   }
 });
 
-// Reject user (admin only)
+// Reject user (admin only) - Update broker accounts status too
 router.post('/admin/users/:id/reject', authenticateAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
@@ -546,6 +621,7 @@ router.post('/admin/users/:id/reject', authenticateAdmin, async (req, res) => {
     const adminId = req.admin.id;
     const supabase = createServiceRoleClient();
 
+    // Update user status to rejected
     const { data: user, error: updateError } = await supabase
       .from('users')
       .update({ status: 'rejected' })
@@ -562,6 +638,20 @@ router.post('/admin/users/:id/reject', authenticateAdmin, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Update all user's broker accounts status to rejected
+    const { error: brokerUpdateError } = await supabase
+      .from('broker_accounts')
+      .update({
+        status: 'rejected',
+        rejection_reason: reason || 'User account rejected',
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId);
+
+    if (brokerUpdateError) {
+      console.error('Update broker accounts error:', brokerUpdateError);
+    }
+
     // Record rejection history
     await supabase
       .from('user_approval_history')
@@ -576,10 +666,10 @@ router.post('/admin/users/:id/reject', authenticateAdmin, async (req, res) => {
     emailQueue.addToQueue({
       to: user.email,
       subject: 'Account Review Update - XAU/USD Algo Trader',
-      html: accountRejectedEmail(user.name, reason)
+      html: accountRejectedEmail(user.name, user.email, reason)
     });
     
-    console.log('User rejected:', userId);
+    console.log('User and broker accounts rejected:', userId);
     res.json({ message: 'User rejected successfully' });
   } catch (error) {
     console.error('Reject user error:', error);
@@ -587,7 +677,7 @@ router.post('/admin/users/:id/reject', authenticateAdmin, async (req, res) => {
   }
 });
 
-// Suspend user (admin only)
+// Suspend user (admin only) - Update broker accounts status too
 router.post('/admin/users/:id/suspend', authenticateAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
@@ -595,6 +685,7 @@ router.post('/admin/users/:id/suspend', authenticateAdmin, async (req, res) => {
     const adminId = req.admin.id;
     const supabase = createServiceRoleClient();
 
+    // Update user status to suspended
     const { data: user, error: updateError } = await supabase
       .from('users')
       .update({ status: 'suspended' })
@@ -611,6 +702,19 @@ router.post('/admin/users/:id/suspend', authenticateAdmin, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Update all user's broker accounts status to suspended
+    const { error: brokerUpdateError } = await supabase
+      .from('broker_accounts')
+      .update({
+        status: 'suspended',
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId);
+
+    if (brokerUpdateError) {
+      console.error('Update broker accounts error:', brokerUpdateError);
+    }
+
     // Record suspension history
     await supabase
       .from('user_approval_history')
@@ -621,7 +725,7 @@ router.post('/admin/users/:id/suspend', authenticateAdmin, async (req, res) => {
         reason: reason || 'Account suspended'
       });
 
-    console.log('User suspended:', userId);
+    console.log('User and broker accounts suspended:', userId);
     res.json({ message: 'User suspended successfully' });
   } catch (error) {
     console.error('Suspend user error:', error);
@@ -662,6 +766,74 @@ router.get('/admin/users/:id/history', authenticateAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error('User history error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get user with broker accounts (admin only)
+router.get('/admin/users/:id/details', authenticateAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const supabase = createServiceRoleClient();
+
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('User details error:', error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Get user's broker accounts
+    const { data: brokerAccounts, error: brokerError } = await supabase
+      .from('broker_accounts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (brokerError) {
+      console.error('Broker accounts error:', brokerError);
+    }
+
+    res.json({
+      user: {
+        ...user,
+        broker_accounts: brokerAccounts || []
+      }
+    });
+  } catch (error) {
+    console.error('User details error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get user's broker accounts (admin only)
+router.get('/admin/users/:id/broker-accounts', authenticateAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const supabase = createServiceRoleClient();
+
+    const { data: brokerAccounts, error } = await supabase
+      .from('broker_accounts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Get broker accounts error:', error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    res.json({ brokerAccounts });
+  } catch (error) {
+    console.error('Get broker accounts error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -720,7 +892,7 @@ router.post('/subscriptions', authenticateToken, async (req, res) => {
     let endDate = new Date();
     const duration = parseInt(plan.duration);
     const unit = plan.duration.replace(/[0-9]/g, '').trim().toLowerCase();
-    
+
     if (unit.includes('month')) {
       endDate.setMonth(endDate.getMonth() + duration);
     } else if (unit.includes('year')) {
@@ -747,7 +919,7 @@ router.post('/subscriptions', authenticateToken, async (req, res) => {
       return res.status(500).json({ error: 'Database error' });
     }
 
-    res.json({ 
+    res.json({
       message: 'Subscription created successfully',
       subscriptionId: subscription.id,
       endDate: endDate.toISOString()
@@ -778,7 +950,7 @@ router.get('/user/subscriptions', authenticateToken, async (req, res) => {
       return res.status(500).json({ error: 'Database error' });
     }
 
-    res.json({ 
+    res.json({
       subscriptions: subscriptions.map(sub => ({
         ...sub,
         plan_name: sub.plan?.name,
@@ -792,7 +964,7 @@ router.get('/user/subscriptions', authenticateToken, async (req, res) => {
   }
 });
 
-// Get user profile
+// Get user profile with broker accounts
 router.get('/user/profile', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -813,9 +985,56 @@ router.get('/user/profile', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user });
+    // Get user's broker accounts
+    const { data: brokerAccounts, error: brokerError } = await supabase
+      .from('broker_accounts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (brokerError) {
+      console.error('Broker accounts error:', brokerError);
+      // Don't fail the request if broker accounts fail
+    }
+
+    res.json({
+      user: {
+        ...user,
+        broker_accounts: brokerAccounts || []
+      }
+    });
   } catch (error) {
     console.error('User profile error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//Delete user (admin only) - Also delete broker accounts
+router.delete('/admin/users/:id/delete', authenticateAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const supabase = createServiceRoleClient();
+
+    // Delete user's broker accounts first
+    await supabase
+      .from('broker_accounts')
+      .delete()
+      .eq('user_id', userId);
+
+    // Delete user
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Delete user error:', error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Delete user error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -835,9 +1054,9 @@ router.put('/user/profile', authenticateToken, async (req, res) => {
     // Update user in database
     const { data: updatedUser, error } = await supabase
       .from('users')
-      .update({ 
-        name, 
-        country, 
+      .update({
+        name,
+        country,
         mobile,
         updated_at: new Date().toISOString()
       })
@@ -863,7 +1082,7 @@ router.put('/user/profile', authenticateToken, async (req, res) => {
 
 // Redirect to trading platform (after approval)
 router.get('/trading-platform', authenticateToken, (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Redirecting to trading platform',
     redirectUrl: 'https://your-trading-platform.com/auth',
     authToken: 'generated-auth-token-' + Date.now()
