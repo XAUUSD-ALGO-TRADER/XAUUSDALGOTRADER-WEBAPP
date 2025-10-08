@@ -13,9 +13,12 @@ export interface User {
   email: string;
   country: string;
   mobile: string;
+  broker_accounts_count: number;
   status: string;
   created_at: string;
   last_login?: string;
+  approved_by_name?: string;
+  approved_at?: string;
 }
 
 export interface Admin {
@@ -278,11 +281,14 @@ export const api = {
     status?: string;
     page?: number;
     limit?: number;
+    count?: number;
   }): Promise<UsersResponse> {
     const queryParams = new URLSearchParams();
     if (params?.status) queryParams.append("status", params.status);
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.limit) queryParams.append("limit", params.limit.toString());
+    if (params?.count) queryParams.append("count", params.count.toString());
+
 
     return this.request(`/admin/users?${queryParams}`);
   },
@@ -318,6 +324,12 @@ export const api = {
     return this.request(`/admin/users/${userId}/suspend`, {
       method: "POST",
       body: JSON.stringify({ reason }),
+    });
+  },
+
+  async deleteUser(userId: number): Promise<{ message: string }> {
+    return this.request(`/admin/users/${userId}/delete`, {
+      method: "DELETE",
     });
   },
 
