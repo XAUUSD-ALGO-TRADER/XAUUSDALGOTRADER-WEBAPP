@@ -6,6 +6,7 @@ const API_BASE_URL = `https://xauusdalgotrader-webapp.onrender.com/api`;
 
 console.log("Running in mode:", import.meta.env.MODE);
 console.log("API Base URL:", API_BASE_URL);
+
 export interface User {
   id: number;
   name: string;
@@ -21,6 +22,21 @@ export interface Admin {
   id: number;
   name: string;
   email: string;
+}
+
+export interface BrokerAccount {
+  id?: number;
+  user_id?: number;
+  brokerName: string;
+  accountNumber: string;
+  accountType: string;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface UserWithBrokerAccounts extends User {
+  broker_accounts?: BrokerAccount[];
 }
 
 export interface SubscriptionPlan {
@@ -108,7 +124,12 @@ export const api = {
     password: string;
     country: string;
     mobile: string;
-  }): Promise<{ message: string; userId: number }> {
+    brokerAccounts: {
+      brokerName: string;
+      accountNumber: string;
+      accountType: string;
+    }[];
+  }): Promise<{ message: string; userId: number; user: User }> {
     return this.request("/register", {
       method: "POST",
       body: JSON.stringify(userData),
@@ -164,10 +185,10 @@ export const api = {
   },
 
   // User management
-  async getProfile(): Promise<{ user: User }> {
+  async getProfile(): Promise<{ user: UserWithBrokerAccounts }> {
     return this.request("/user/profile");
   },
-  // Add this to your api object in api.ts
+
   async updateProfile(profileData: {
     name: string;
     country: string;
@@ -176,6 +197,49 @@ export const api = {
     return this.request("/user/profile", {
       method: "PUT",
       body: JSON.stringify(profileData),
+    });
+  },
+
+  // Broker account management
+  async getBrokerAccounts(): Promise<{ brokerAccounts: BrokerAccount[] }> {
+    return this.request("/user/broker-accounts");
+  },
+
+  async addBrokerAccount(brokerAccountData: {
+    brokerName: string;
+    accountNumber: string;
+    accountType: string;
+  }): Promise<{ message: string; brokerAccount: BrokerAccount }> {
+    return this.request("/user/broker-accounts", {
+      method: "POST",
+      body: JSON.stringify(brokerAccountData),
+    });
+  },
+
+  async updateBrokerAccount(
+    accountId: number,
+    brokerAccountData: {
+      brokerName: string;
+      accountNumber: string;
+      accountType: string;
+    }
+  ): Promise<{ message: string; brokerAccount: BrokerAccount }> {
+    return this.request(`/user/broker-accounts/${accountId}`, {
+      method: "PUT",
+      body: JSON.stringify(brokerAccountData),
+    });
+  },
+
+  async deleteBrokerAccount(accountId: number): Promise<{ message: string }> {
+    return this.request(`/user/broker-accounts/${accountId}`, {
+      method: "DELETE",
+    });
+  },
+
+  async toggleBrokerAccountStatus(accountId: number, isActive: boolean): Promise<{ message: string }> {
+    return this.request(`/user/broker-accounts/${accountId}/toggle`, {
+      method: "PATCH",
+      body: JSON.stringify({ is_active: isActive }),
     });
   },
 
@@ -223,6 +287,10 @@ export const api = {
     return this.request(`/admin/users?${queryParams}`);
   },
 
+  async getUserWithBrokerAccounts(userId: number): Promise<{ user: UserWithBrokerAccounts }> {
+    return this.request(`/admin/users/${userId}/details`);
+  },
+
   async approveUser(
     userId: number,
     reason?: string
@@ -257,6 +325,24 @@ export const api = {
     return this.request(`/admin/users/${userId}/history`);
   },
 
+  // Admin broker account management
+  async getUserBrokerAccounts(userId: number): Promise<{ brokerAccounts: BrokerAccount[] }> {
+    return this.request(`/admin/users/${userId}/broker-accounts`);
+  },
+
+  async approveBrokerAccount(accountId: number): Promise<{ message: string }> {
+    return this.request(`/admin/broker-accounts/${accountId}/approve`, {
+      method: "POST",
+    });
+  },
+
+  async rejectBrokerAccount(accountId: number, reason?: string): Promise<{ message: string }> {
+    return this.request(`/admin/broker-accounts/${accountId}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    });
+  },
+
   // Public endpoints
   async getSubscriptionPlans(): Promise<{ plans: SubscriptionPlan[] }> {
     return this.request("/subscription-plans");
@@ -265,6 +351,7 @@ export const api = {
   async getHealth(): Promise<{ status: string; timestamp: string }> {
     return this.request("/health");
   },
+
   async contact(contactData: {
     name: string;
     email: string;

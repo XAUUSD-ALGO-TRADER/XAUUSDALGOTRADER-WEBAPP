@@ -8,6 +8,8 @@ import {
   accountApprovedEmail, 
   accountRejectedEmail 
 } from '../emails/templates.js';
+import brokerAccountsRoutes from './broker-accounts.js';
+// app.use('/api/user', brokerAccountsRoutes);
 
 
 const router = express.Router();
@@ -76,6 +78,7 @@ router.get('/test-supabase', async (req, res) => {
     res.status(500).json({ error: 'Supabase test failed', details: error.message });
   }
 });
+
 
 // User registration
 router.post('/register', async (req, res) => {
@@ -389,6 +392,29 @@ router.post('/admin/login', async (req, res) => {
 //     res.status(500).json({ error: 'Internal server error' });
 //   }
 // });
+
+
+// Get user's broker accounts
+router.get('/user/broker-accounts', async (req, res) => {
+  try {
+    const supabase = createServiceRoleClient();
+    const userId = req.user.id; // From auth middleware
+
+    const { data: brokerAccounts, error } = await supabase
+      .from('broker_accounts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    res.json({ brokerAccounts });
+  } catch (error) {
+    console.error('Get broker accounts error:', error);
+    res.status(500).json({ error: 'Failed to fetch broker accounts' });
+  }
+});
+
 
 // Get pending users (admin only)
 router.get('/admin/pending-users', authenticateAdmin, async (req, res) => {
