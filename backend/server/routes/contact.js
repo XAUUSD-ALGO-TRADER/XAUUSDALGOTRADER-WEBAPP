@@ -10,8 +10,8 @@ const transporter = nodemailer.createTransport({
     port: 465, // Your SMTP port
     secure: true, // `true` for port 465, `false` for other ports
     auth: {
-      user: "support@xauusdalgotrader.com",
-      pass: "LIpun@890890", // Your email password
+      user: process.env.FROM_EMAIL,
+      pass: process.env.EMAIL_PASS, // Your email password
     },
 });
 
@@ -33,8 +33,8 @@ router.post('/contact', async (req, res) => {
 
         // Send the email
         const info = await transporter.sendMail({
-            from: '"Maddison Foo Koch" <support@xauusdalgotrader.com>',
-            to: "nikhilsahu1312@gmail.com",
+            from: `"Maddison Foo Koch" ${process.env.FROM_EMAIL}`,
+            to: email,
             subject: `📧 New Contact Form: ${name}`,
             html: adminEmailHtml,
         });
